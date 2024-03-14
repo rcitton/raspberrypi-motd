@@ -8,7 +8,7 @@ function color (){
 
 function extend (){
   local str="$1"
-  let spaces=60-${#1}
+  let spaces=57-${#1}
   while [ $spaces -gt 0 ]; do
     str="$str "
     let spaces=spaces-1
@@ -112,35 +112,40 @@ else
   login="None"
 fi
 
-label1="$(extend "$login")"
-label1="$borderBar  $(color $statsLabelColor "Last Login....:") $label1$borderBar"
-
 uptime="$(sec2time $(cut -d "." -f 1 /proc/uptime))"
 uptime="$uptime ($(date -d "@"$(grep btime /proc/stat | cut -d " " -f 2) +"%d-%m-%Y %H:%M:%S"))"
 
+read one five fifteen rest < /proc/loadavg
+loadavg="${one}, ${five}, ${fifteen} (1, 5, 15 min)"
+
+label0="$(extend "$(hostname)")"
+label0="$borderBar  $(color $statsLabelColor "Hostname.........:") $label0$borderBar"
+
+label1="$(extend "$login")"
+label1="$borderBar  $(color $statsLabelColor "Last Login.......:") $label1$borderBar"
+
 label2="$(extend "$uptime")"
-label2="$borderBar  $(color $statsLabelColor "Uptime........:") $label2$borderBar"
+label2="$borderBar  $(color $statsLabelColor "Uptime...........:") $label2$borderBar"
 
-label3="$(extend "$(cat /proc/loadavg | awk ' { printf "%s, %s, %s",$1,$2,$3; }')")"
-label3="$borderBar  $(color $statsLabelColor "Load..........:") $label3$borderBar"
+label3="$(extend "$(free -m | awk 'NR==2 { printf "Total: %sMB, Used: %sMB, Free: %sMB",$2,$3,$4; }')")"
+label3="$borderBar  $(color $statsLabelColor "Memory...........:") $label3$borderBar"
 
-label4="$(extend "$(free -m | awk 'NR==2 { printf "Total: %sMB, Used: %sMB, Free: %sMB",$2,$3,$4; }')")"
-label4="$borderBar  $(color $statsLabelColor "Memory........:") $label4$borderBar"
+label4="$(extend "$loadavg")"
+label4="$borderBar  $(color $statsLabelColor "Load AVG.........:") $label4$borderBar"
 
-label5="$(extend "$(df -h ~ | awk 'NR==2 { printf "Total: %sB, Used: %sB, Free: %sB, Use: %s",$2,$3,$4,$5; }')")"
-label5="$borderBar  $(color $statsLabelColor "System space..:") $label5$borderBar"
+label5="$(extend "$(df -h ~ | awk 'NR==2 { printf "Total: %sB, Used: %sB, Free: %sB",$2,$3,$4; }')")"
+label5="$borderBar  $(color $statsLabelColor "Home space.......:") $label5$borderBar"
 
-label6="$(extend $(ps ax | wc -l | tr -d " "))"
-label6="$borderBar  $(color $statsLabelColor "Processes # ..:") $label6$borderBar"
+label6="$(extend "$(/usr/bin/vcgencmd measure_temp | cut -c "6-9") ºC")"
+label6="$borderBar  $(color $statsLabelColor "Temperature......:") $label6$borderBar"
 
-label7="$(extend "$(df -h /var/log | awk 'NR==2 { printf "Total: %sB, Used: %sB, Free: %sB, Use: %s",$2,$3,$4,$5; }')")"
-label7="$borderBar  $(color $statsLabelColor "Log2RAM space.:") $label7$borderBar"
+label7="$(extend "$(hostname -I | /usr/bin/cut -d " " -f 1)")"
+label7="$borderBar  $(color $statsLabelColor "Local IP Address.:") $label7$borderBar"
 
-label8="$(extend "$(/usr/bin/vcgencmd measure_temp | cut -c "6-9")ºC")"
-label8="$borderBar  $(color $statsLabelColor "Temperature...:") $label8$borderBar"
+label8="$(extend "$(wget -q -O - http://ipv4.icanhazip.com | tail)")"
+label8="$borderBar  $(color $statsLabelColor "Public IP Address:") $label8$borderBar"
 
-stats="$label1\n$label2\n$label3\n$label4\n$label5\n$label6\n$label7\n$label8"
+stats="$label0\n$label1\n$label2\n$label3\n$label4\n$label51n$label6\n$label7\n$label8"
 
 # Print motd
-echo -e "$header\n$borderEmptyLine\n$greetings\n$borderEmptyLine\n$stats\n$borderEmptyLine\n$borderBottomLine"       
-
+echo -e "$header\n$borderEmptyLine\n$greetings\n$borderEmptyLine\n$stats\n$borderEmptyLine\n$borderBottomLine"
